@@ -1,27 +1,31 @@
-trigger: 
-  - none 
+name: CI Pipeline
 
-pool:  
-  vmImage: ubuntu-latest 
+on:
+  push:
+    branches:
+      - main
 
-variables:
-  buildConfiguration: 'Release'
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-steps: 
-- task: DotNetCoreCLI@2
-  inputs: 
-    command: 'restore'
-    projects: '**/*.csproj'
-    feedsToUse: 'select'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-- task: DotNetCoreCLI@2
-  inputs: 
-    command: 'build'
-    projects: '**/*.csproj'
-    arguments: '--configuration $(buildconfiguration)'
+      - name: Set up Programming Language Environment
+        run: |
+          curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+          sudo apt-get install -y nodejs
 
-- task: PublishBuildArtifacts@1
-  inputs: 
-    PathtoPublish: '$(build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+      - name: Install Dependencies
+        run: |
+          npm install
+
+      - name: Build Project
+        run: |
+          npm run build
+
+      - name: Run Tests
+        run: |
+          npm test
